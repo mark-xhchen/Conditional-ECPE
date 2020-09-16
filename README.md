@@ -21,3 +21,4 @@ Run a program:
 - Make sure you complete the dataset construction first
 -	Directly run “python programname.py”, where the “programename” is the python file you want to run.
 
+Should you have any problem, contact xinhchen2-c@my.cityu.edu.hk
