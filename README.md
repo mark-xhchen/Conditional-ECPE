@@ -14,7 +14,7 @@ Dependency Requirement
 
 Dataset Construction Steps
 - Run the “preprocess.cy” to get the manually labeled dataset, which will be stored in a file called “data.txt”
-- Run the “gen_nega_samples.py” to generate the constructed dataset, which is stored in a file called “data_wneg.txt”
+- Run the “gen_nega_samples.py” to generate the constructed conditional-ECPE dataset, which is stored in a file called “data_wneg.txt”
 -	If you prefer our training/testing split, please run “divide_fold.py” to get 20 files, which will be named as “foldx_train.txt” and “foldx_test.txt”, where “x” should be from 1 to 10.
 
 Run a program:
