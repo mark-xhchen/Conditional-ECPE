@@ -11944,7 +11944,7 @@
 2,null,null,臧虹凯 以 629 分 的 优异成绩 考入 了 中央财经 大学
 3,null,null,收到 录取 通知书 后 的 他 十分高兴
 4,null,null,但 想到 每学期 的 学费
-5,sadbness,犯起了愁,他 又 犯起 了 愁
+5,sadness,犯起了愁,他 又 犯起 了 愁
 6,null,null,考虑 几日 后
 7,null,null,臧虹凯 决定 去 上 大学
 8,null,null,哥哥 已经 毕业 了
