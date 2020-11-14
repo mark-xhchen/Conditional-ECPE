@@ -176,8 +176,8 @@ def run():
             logger.info('############# fold {} begin ###############'.format(fold))
 
             # Data Code Block
-            train_file_name = 'fold{}_train_wneg.txt'.format(fold)
-            test_file_name = 'fold{}_test_wneg.txt'.format(fold)
+            train_file_name = 'fold{}_train.txt'.format(fold)
+            test_file_name = 'fold{}_test.txt'.format(fold)
             _, tr_x, tr_sen_len, tr_doc_len, tr_y, tr_emo, tr_cau, tr_con, _ = load_data('./nega_data/'+train_file_name, word_id_mapping, FLAGS.max_doc_len, FLAGS.max_sen_len, FLAGS.max_cau_num)
             te_doc_id, te_x, te_sen_len, te_doc_len, te_y, te_emo, te_cau, te_con, _ = load_data('./nega_data/'+test_file_name, word_id_mapping, FLAGS.max_doc_len, FLAGS.max_sen_len, FLAGS.max_cau_num)
 
