@@ -1,5 +1,5 @@
 # Conditional-ECPE
-This is a repository for our 2020 EMNLP paper "Conditional Causal Relationships between Emotions and Causes in Texts" [pdf](https://www.aclweb.org/anthology/2020.emnlp-main.252.pdf), which contains the manually-labeled dataset and the code of our proposed module.
+This is a repository for our 2020 EMNLP paper "Conditional Causal Relationships between Emotions and Causes in Texts" \[[pdf](https://www.aclweb.org/anthology/2020.emnlp-main.252.pdf)\], which contains the manually-labeled dataset and the code of our proposed module.
 
 Note that our dataset is constructed based on an existing ECPE corpus. If you are interested in the original ECPE datset, please refer to: https://github.com/NUSTM/ECPE
 
