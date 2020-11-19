@@ -20,9 +20,14 @@ Dataset Construction Steps
 - Run the “gen_nega_samples.py” to generate the constructed conditional-ECPE dataset, which is stored in a file called “data_wneg.txt”
 -	If you prefer our training/testing split, please run “divide_fold.py” to get 20 files, which will be named as “foldx_train.txt” and “foldx_test.txt”, where “x” should be from 1 to 10.
 
-Note that if you directly download the repo from the github site, <big>the downloaded "w2v_200.txt" in directory "nega_data" may not be the correct file.</big> Please open the "w2v_200.txt" file in github, right click on the website, choose "save as" to download the correct file, which should be around <big>80Mb</big>. If you are cloning the whole repo, this should not be a problem.
+Note that if you directly download the repo zip file from the github site, **the downloaded "w2v_200.txt" in directory "nega_data" may not be the correct file.** Please:
+- open the "w2v_200.txt" file in github;
+- right click on the website;
+- choose "save as" to download the correct file, which should be around **80Mb**. 
 
-Run a program:
+If you are cloning the whole repo, the above issue should not be a problem.
+
+To run a program:
 - Make sure you complete the dataset construction first
 -	Directly run “python programname.py”, where the “programename” is the python file you want to run.
 
