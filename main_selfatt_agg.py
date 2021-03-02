@@ -82,7 +82,7 @@ def build_model(word_embedding, x, sen_len, doc_len, keep_prob1, keep_prob2, y, 
         # AGGREGATE PAIR and CONTEXT based prediction based on attention
         # calculate the difference between pred_woc and [0,1] and treat it as weight
         weight = tf.reshape(pred_woc[:, 1], [-1, 1])
-        pred_final = weight * pred_woc + pred_wc
+        pred_final = weight * pred_woc + (1 - weight) * pred_wc
 
         loss_wc = -tf.reduce_sum(y * tf.log(pred_final)) / tf.cast(tf.shape(x)[0], tf.float32)
 

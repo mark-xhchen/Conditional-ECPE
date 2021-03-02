@@ -68,7 +68,7 @@ def build_model(word_embedding, x, sen_len, doc_len, keep_prob1, keep_prob2, y, 
 
     s_sen = RNN(s, doc_len, n_hidden=FLAGS.n_hidden, scope=FLAGS.scope + 'sentence_lstm_layer')
     s_emo_wc = tf.matmul(emo, s_sen)
-    s_cau_wc = tf.matmul(cau, s)
+    s_cau_wc = tf.matmul(cau, s_sen)
     s_wc = tf.concat([s_emo_wc, s_cau_wc], 1)
     s_wc = tf.reshape(s_wc, [-1, 4, 2*FLAGS.n_hidden])
 
@@ -86,7 +86,7 @@ def build_model(word_embedding, x, sen_len, doc_len, keep_prob1, keep_prob2, y, 
         # AGGREGATE PAIR and CONTEXT based prediction based on attention
         # calculate the difference between pred_woc and [0,1] and treat it as weight
         weight = tf.reshape(pred_woc[:, 1], [-1, 1])
-        pred_final = weight * pred_woc + pred_wc
+        pred_final = weight * pred_woc + (1 - weight) * pred_wc
         pred_final /= tf.reshape(tf.reduce_sum(pred_final, 1), [-1, 1])
 
         loss_wc = -tf.reduce_sum(y * tf.log(pred_final)) / tf.cast(tf.shape(x)[0], tf.float32)
