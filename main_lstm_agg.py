@@ -41,7 +41,7 @@ tf.app.flags.DEFINE_float('l2_reg', 1e-4, 'l2 regularization')
 tf.logging.set_verbosity(tf.logging.ERROR)
 
 
-def build_model(word_embedding, x, sen_len, doc_len, keep_prob1, keep_prob2, y, emo, cau, con, con_len, RNN=biLSTM):
+def build_model(word_embedding, x, sen_len, doc_len, keep_prob1, keep_prob2, y, emo, cau, con, wocy, RNN=biLSTM):
     x = tf.nn.embedding_lookup(word_embedding, x)
     inputs = tf.reshape(x, [-1, FLAGS.max_sen_len, FLAGS.embedding_dim])
     inputs = tf.nn.dropout(inputs, keep_prob=keep_prob1)
@@ -80,8 +80,12 @@ def build_model(word_embedding, x, sen_len, doc_len, keep_prob1, keep_prob2, y, 
         # PAIR based prediction
         pred_woc, reg_woc = softmax_part(s_woc, 4*2*FLAGS.n_hidden, keep_prob2, FLAGS.n_class, 'softmax_w_woc', 'softmax_b_woc')
 
+        loss_wocy = -tf.reduce_sum(wocy * tf.log(pred_woc)) / tf.cast(tf.shape(x)[0], tf.float32)
+
         # CONTEXT based prediction
         pred_wc, reg_wc = softmax_part(s_wc, 4*2*FLAGS.n_hidden, keep_prob2, FLAGS.n_class, 'softmax_w_wc', 'softmax_b_wc')
+        
+        loss_wcy = -tf.reduce_sum(y * tf.log(pred_wc)) / tf.cast(tf.shape(x)[0], tf.float32)
 
         # AGGREGATE PAIR and CONTEXT based prediction based on attention
         # calculate the difference between pred_woc and [0,1] and treat it as weight
@@ -91,7 +95,7 @@ def build_model(word_embedding, x, sen_len, doc_len, keep_prob1, keep_prob2, y, 
 
         loss_wc = -tf.reduce_sum(y * tf.log(pred_final)) / tf.cast(tf.shape(x)[0], tf.float32)
 
-    loss = loss_wc
+    loss = loss_wc + loss_wocy + loss_wcy
     reg = reg_wc + reg_woc
 
     return loss, pred_final, reg
@@ -128,9 +132,9 @@ def print_training_info():
     print('training_iter-{}, scope-{}\n'.format(FLAGS.training_iter, FLAGS.scope))
 
 
-def get_batch_data(x, sen_len, doc_len, keep_prob1, keep_prob2, y, batch_size, emo, cau, con, con_len, test=False):
+def get_batch_data(x, sen_len, doc_len, keep_prob1, keep_prob2, y, batch_size, emo, cau, con, wocy, test=False):
     for index in batch_index(len(y), batch_size, test):
-        feed_list = [x[index], sen_len[index], doc_len[index], keep_prob1, keep_prob2, y[index], emo[index], cau[index], con[index], con_len[index]]
+        feed_list = [x[index], sen_len[index], doc_len[index], keep_prob1, keep_prob2, y[index], emo[index], cau[index], con[index], wocy[index]]
         yield feed_list, len(index)
 
 
@@ -159,10 +163,10 @@ def run():
     emo = tf.placeholder(tf.float32, [None, 1, FLAGS.max_doc_len])
     cau = tf.placeholder(tf.float32, [None, FLAGS.max_cau_num, FLAGS.max_doc_len])
     con = tf.placeholder(tf.float32, [None, FLAGS.max_doc_len, FLAGS.max_doc_len])
-    con_len = tf.placeholder(tf.int32, [None])
-    placeholders = [x, sen_len, doc_len, keep_prob1, keep_prob2, y, emo, cau, con, con_len]
+    wocy = tf.placeholder(tf.float32, [None, FLAGS.n_class])
+    placeholders = [x, sen_len, doc_len, keep_prob1, keep_prob2, y, emo, cau, con, wocy]
 
-    loss, pred_wc, reg = build_model(word_embedding, x, sen_len, doc_len, keep_prob1, keep_prob2, y, emo, cau, con, con_len)
+    loss, pred_wc, reg = build_model(word_embedding, x, sen_len, doc_len, keep_prob1, keep_prob2, y, emo, cau, con, wocy)
     loss_op = loss + reg * FLAGS.l2_reg
     optimizer = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate).minimize(loss_op)
     true_y_op = y
@@ -184,8 +188,8 @@ def run():
             # Data Code Block
             train_file_name = 'fold{}_train.txt'.format(fold)
             test_file_name = 'fold{}_test.txt'.format(fold)
-            _, tr_x, tr_sen_len, tr_doc_len, tr_y, tr_emo, tr_cau, tr_con, tr_con_len = load_data('./nega_data/'+train_file_name, word_id_mapping, FLAGS.max_doc_len, FLAGS.max_sen_len, FLAGS.max_cau_num)
-            te_doc_id, te_x, te_sen_len, te_doc_len, te_y, te_emo, te_cau, te_con, te_con_len = load_data('./nega_data/'+test_file_name, word_id_mapping, FLAGS.max_doc_len, FLAGS.max_sen_len, FLAGS.max_cau_num)
+            _, tr_x, tr_sen_len, tr_doc_len, tr_y, tr_emo, tr_cau, tr_con, tr_wocy = load_data('./nega_data/'+train_file_name, word_id_mapping, FLAGS.max_doc_len, FLAGS.max_sen_len, FLAGS.max_cau_num)
+            te_doc_id, te_x, te_sen_len, te_doc_len, te_y, te_emo, te_cau, te_con, te_wocy = load_data('./nega_data/'+test_file_name, word_id_mapping, FLAGS.max_doc_len, FLAGS.max_sen_len, FLAGS.max_cau_num)
 
             max_p = max_r = max_acc = max_f1 = max_auc = -1.
             logger.info('train docs: {}    test docs: {}'.format(len(tr_x), len(te_x)))
@@ -193,11 +197,10 @@ def run():
             for i in range(FLAGS.training_iter):
                 start_time, step = time.time(), 1
                 # train
-                for train, _ in get_batch_data(tr_x, tr_sen_len, tr_doc_len, FLAGS.keep_prob1, FLAGS.keep_prob2, tr_y, FLAGS.batch_size, tr_emo, tr_cau, tr_con, tr_con_len):
+                for train, _ in get_batch_data(tr_x, tr_sen_len, tr_doc_len, FLAGS.keep_prob1, FLAGS.keep_prob2, tr_y, FLAGS.batch_size, tr_emo, tr_cau, tr_con, tr_wocy):
                     _, loss, pred_y, true_y = sess.run(
                         [optimizer, loss_op, pred_wc, true_y_op], feed_dict=dict(zip(placeholders, train)))
                     if step % 10 == 0:
-                        print(pred_y)
                         logger.info('step {}: train loss {:.4f} '.format(step, loss))
                         acc, p, r, f1, auc = acc_prf(pred_y, true_y)
                         logger.info('predict: train acc {:.4f} p {:.4f} r {:.4f} f1 {:.4f} auc {:.4f}'.format(acc, p, r, f1, auc))
@@ -207,7 +210,7 @@ def run():
                 # test
                 pred_test = []
                 true_test = []
-                for test, _ in get_batch_data(te_x, te_sen_len, te_doc_len, 1., 1., te_y, FLAGS.batch_size, te_emo, te_cau, te_con, te_con_len, test=True):
+                for test, _ in get_batch_data(te_x, te_sen_len, te_doc_len, 1., 1., te_y, FLAGS.batch_size, te_emo, te_cau, te_con, te_wocy, test=True):
                     loss, pred_y, true_y = sess.run(
                             [loss_op, pred_wc, true_y_op], feed_dict=dict(zip(placeholders, test)))
                     logger.info('\nepoch {}: test loss {:.4f} cost time: {:.1f}s\n'.format(i, loss, time.time()-start_time))
