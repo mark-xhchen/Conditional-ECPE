@@ -33,13 +33,13 @@ for fold in range(1,11):
     mark_out = {}
     for j in range((fold-1)*fold_size, (fold)*fold_size):
         content_list = doc_content[j]
-        fold_test.write("{} {} {}\n".format(j+1, len(content_list)-2, content_list[0].split()[2]))
+        fold_test.write("{} {} {} {}\n".format(j+1, len(content_list)-2, content_list[0].split()[2], content_list[0].split()[3]))
         for l in range(1, len(content_list)):
             fold_test.write(content_list[l])
         mark_out[j] = 1
     for j in range(len(doc_content)):
         if j not in mark_out:
             content_list = doc_content[j]
-            fold_train.write("{} {} {}\n".format(j+1, len(content_list)-2, content_list[0].split()[2]))
+            fold_train.write("{} {} {} {}\n".format(j+1, len(content_list)-2, content_list[0].split()[2], content_list[0].split()[3]))
             for l in range(1, len(content_list)):
                 fold_train.write(content_list[l])

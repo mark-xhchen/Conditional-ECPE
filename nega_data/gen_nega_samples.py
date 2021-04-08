@@ -6,8 +6,8 @@
 import numpy as np
 
 
-def write_a_doc(ofile, doc_num, label, doclen, line1, emo, cau, emo_list, cau_list, con_list):
-    ofile.write("{} {} {}\n".format(doc_num, doclen, label))
+def write_a_doc(ofile, doc_num, label, cond_label, doclen, line1, emo, cau, emo_list, cau_list, con_list):
+    ofile.write("{} {} {} {}\n".format(doc_num, doclen, label, cond_label))
     ofile.write(line1)
     caucnt = 0
     concnt = 0
@@ -75,10 +75,11 @@ for doc_id in range(len(doc_content)):
     doclen = int(line0.strip().split(" ")[1])
     label = int(line0.strip().split(" ")[2])
     mark_nega_index = {}
-    # generate negative samples
-    write_a_doc(ofile, doc_num, 1, doclen, line1, emo, cau, emo_list, cau_list, con_list)
+    # generate original samples
+    write_a_doc(ofile, doc_num, 1, label, doclen, line1, emo, cau, emo_list, cau_list, con_list)
     doc_num += 1
 
+    # generate negative samples
     mark_nega_index = {}
     for cnt in range(n):
         nega_index = np.random.randint(len(doc_content))
@@ -87,7 +88,7 @@ for doc_id in range(len(doc_content)):
         mark_nega_index[nega_index] = 1
 
         nega_con_list = doc_content[nega_index][6]
-        write_a_doc(ofile, doc_num, 1-label, doclen, line1, emo, cau, emo_list, cau_list, nega_con_list)
+        write_a_doc(ofile, doc_num, 1-label, label, doclen, line1, emo, cau, emo_list, cau_list, nega_con_list)
         doc_num += 1
 
     mark_nega_index = {}
@@ -100,5 +101,5 @@ for doc_id in range(len(doc_content)):
         mark_nega_index[nega_index] = 1
 
         nega_emo_list = doc_content[nega_index][4]
-        write_a_doc(ofile, doc_num, 0, doclen, line1, emo, cau, nega_emo_list, cau_list, con_list)
+        write_a_doc(ofile, doc_num, 0, label, doclen, line1, emo, cau, nega_emo_list, cau_list, con_list)
         doc_num += 1
