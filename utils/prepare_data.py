@@ -63,6 +63,7 @@ def load_data(input_file, word_idx, max_doc_len=75, max_sen_len=45, max_cau_num=
     x, sen_len, doc_len, y, doc_id = [], [], [], [], []
     con_doc_len = []
     emo, cau, con = [], [], []
+    wocy = []
 
     n_cut = 0
     inputFile = open(input_file, 'r', encoding='utf-8')
@@ -76,6 +77,8 @@ def load_data(input_file, word_idx, max_doc_len=75, max_sen_len=45, max_cau_num=
         doc_len.append(d_len)
         y_tmp = np.zeros(2, np.int32)
         y_tmp[int(line[2])] = 1
+        wocy_tmp = np.zeros(2, np.int32)
+        wocy_tmp[1-int(line[3])] = 1
 
         pairs = eval('[' + inputFile.readline().strip() + ']')
         emo_all, cau_all = zip(*pairs)
@@ -114,13 +117,14 @@ def load_data(input_file, word_idx, max_doc_len=75, max_sen_len=45, max_cau_num=
         cau.append(cau_tmp)
         con.append(con_tmp)
         con_doc_len.append(con_cnt)
+        wocy.append(wocy_tmp)
 
-    y, x, sen_len, doc_len, emo, cau, con, con_doc_len = map(np.array, [y, x, sen_len, doc_len, emo, cau, con, con_doc_len])
+    y, x, sen_len, doc_len, emo, cau, con, con_doc_len, wocy = map(np.array, [y, x, sen_len, doc_len, emo, cau, con, con_doc_len, wocy])
     for var in ['y', 'x', 'sen_len', 'doc_len', 'emo', 'cau', 'con']:
         print('{}.shape {}'.format(var, eval(var).shape))
     print('n_cut {}'.format(n_cut))
     print('load data done!\n')
-    return doc_id, x, sen_len, doc_len, y, emo, cau, con, con_doc_len
+    return doc_id, x, sen_len, doc_len, y, emo, cau, con, wocy
 
 
 def acc_prf(pred_y, true_y):
